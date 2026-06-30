@@ -7,11 +7,95 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/styles.css"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#08101e; --panel:rgba(255,255,255,0.07); --panel-high:rgba(255,255,255,0.13);
+  --border:rgba(255,255,255,0.11); --border-glow:rgba(240,72,72,0.55);
+  --text:#edf0f7; --muted:#8b96b2; --faint:#444e66;
+  --accent:#e83030; --accent-hover:#c42020; --teal:#2dd4bf; --teal-glow:rgba(45,212,191,0.18);
+  --shadow-lg:0 28px 64px rgba(0,0,0,0.55); --shadow-sm:0 4px 16px rgba(0,0,0,0.3);
+  --r-card:22px; --r-input:12px; --r-btn:12px;
+  --font-display:'Playfair Display',Georgia,serif; --font-body:'Inter',system-ui,sans-serif;
+  --transition:180ms cubic-bezier(0.16,1,0.3,1);
+}
+html { font-size:16px; scroll-behavior:smooth; -webkit-font-smoothing:antialiased; }
+body { font-family:var(--font-body); background:var(--bg); color:var(--text); min-height:100dvh; overflow-x:hidden; }
+body::before, body::after { content:''; position:fixed; border-radius:50%; filter:blur(80px); opacity:0.3; z-index:0; pointer-events:none; }
+body::before { width:420px; height:420px; background:radial-gradient(circle,#e83030,transparent 70%); top:-120px; right:-100px; }
+body::after  { width:380px; height:380px; background:radial-gradient(circle,#2dd4bf,transparent 70%); bottom:-120px; left:-80px; }
+
+.shell { position:relative; z-index:1; display:grid; grid-template-columns:340px 1fr; gap:24px; padding:28px; min-height:100dvh; align-items:start; }
+
+.left { position:sticky; top:28px; background:var(--panel); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid var(--border); border-radius:var(--r-card); padding:36px 28px; display:flex; flex-direction:column; gap:20px; box-shadow:var(--shadow-lg); }
+.mini { text-transform:uppercase; letter-spacing:0.22em; font-size:11px; font-weight:600; color:var(--teal); }
+h1 { font-family:var(--font-display); font-size:clamp(28px,4vw,44px); line-height:1.08; font-weight:700; }
+.subtitle { color:var(--muted); font-size:14px; line-height:1.75; }
+.divider { height:1px; background:var(--border); }
+.creator { background:var(--panel-high); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; flex-direction:column; gap:8px; }
+.creator span { text-transform:uppercase; letter-spacing:0.16em; font-size:10px; color:var(--muted); font-weight:600; }
+.creator strong { font-size:19px; font-weight:700; letter-spacing:0.03em; }
+.logo-badge { display:flex; align-items:center; gap:10px; }
+.logo-text { font-family:var(--font-display); font-size:28px; font-weight:700; line-height:1; }
+.logo-text span { color:var(--accent); }
+
+.right { background:var(--panel); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid var(--border); border-radius:var(--r-card); padding:26px; box-shadow:var(--shadow-lg); display:flex; flex-direction:column; gap:22px; }
+
+.cards { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.doc-btn { border:1px solid var(--border); background:rgba(255,255,255,0.04); color:var(--text); padding:18px 14px; border-radius:18px; font-size:13px; font-weight:700; font-family:var(--font-body); cursor:pointer; transition:transform var(--transition),border-color var(--transition),background var(--transition),box-shadow var(--transition); text-align:center; line-height:1.4; }
+.doc-btn:hover { transform:translateY(-3px); border-color:rgba(240,72,72,0.45); background:rgba(240,72,72,0.10); box-shadow:0 8px 24px rgba(232,48,48,0.18); }
+.doc-btn.active { border-color:var(--border-glow); background:rgba(240,72,72,0.14); box-shadow:0 0 0 3px rgba(240,72,72,0.12),0 10px 32px rgba(232,48,48,0.22); transform:translateY(-2px); }
+
+#form-zone form { display:flex; flex-direction:column; gap:16px; }
+.form-heading { font-family:var(--font-display); font-size:26px; font-weight:700; line-height:1.15; border-bottom:1px solid var(--border); padding-bottom:14px; }
+
+.grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+.col-full { grid-column:1/-1; } .col-2 { grid-column:span 2; }
+
+.field { display:flex; flex-direction:column; gap:7px; }
+label { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; }
+input, textarea, select { font-family:var(--font-body); font-size:14px; color:var(--text); background:rgba(8,16,30,0.6); border:1px solid rgba(255,255,255,0.10); border-radius:var(--r-input); padding:12px 14px; outline:none; width:100%; transition:border-color var(--transition),box-shadow var(--transition); }
+input::placeholder, textarea::placeholder { color:var(--faint); }
+input:focus, textarea:focus, select:focus { border-color:rgba(45,212,191,0.55); box-shadow:0 0 0 4px rgba(45,212,191,0.09); }
+select option { background:#0e1829; }
+textarea { min-height:100px; resize:vertical; }
+
+.section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--teal); padding-bottom:8px; border-bottom:1px solid var(--border); }
+
+.items-box { background:rgba(255,255,255,0.035); border:1px dashed rgba(255,255,255,0.14); border-radius:18px; padding:18px; display:flex; flex-direction:column; gap:10px; }
+.items-header { display:grid; gap:8px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--muted); }
+.item-row { display:grid; gap:8px; align-items:center; }
+.item-row input { padding:10px 12px; font-size:13px; }
+.item-row.order-cols, .items-header.order-cols { grid-template-columns:1fr 1fr 2.5fr 1.2fr 1fr 1.2fr; }
+.item-row.acta-cols, .items-header.acta-cols { grid-template-columns:3fr 1fr 1.5fr; }
+
+.pay-group { display:flex; flex-wrap:wrap; gap:12px; margin-top:2px; }
+.pay-option { display:flex; align-items:center; gap:8px; padding:10px 16px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:background var(--transition),border-color var(--transition); font-size:14px; font-weight:600; user-select:none; }
+.pay-option:hover { background:rgba(255,255,255,0.09); border-color:rgba(45,212,191,0.35); }
+.pay-option input[type="checkbox"] { width:16px; height:16px; accent-color:var(--teal); cursor:pointer; padding:0; }
+
+.btn-row { display:flex; gap:12px; margin-top:6px; flex-wrap:wrap; }
+.btn { font-family:var(--font-body); font-size:14px; font-weight:700; padding:14px 28px; border-radius:var(--r-btn); border:none; cursor:pointer; transition:transform var(--transition),box-shadow var(--transition),background var(--transition); letter-spacing:0.02em; }
+.btn:hover { transform:translateY(-2px); }
+.btn:active { transform:translateY(0); }
+.btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+.btn-primary { background:linear-gradient(135deg,#e83030 0%,#c01515 100%); color:#fff; box-shadow:0 6px 22px rgba(232,48,48,0.35); }
+.btn-primary:hover { background:linear-gradient(135deg,#f04040 0%,#d01c1c 100%); box-shadow:0 10px 32px rgba(232,48,48,0.48); }
+.btn-secondary { background:rgba(255,255,255,0.07); color:var(--text); border:1px solid var(--border); }
+.btn-secondary:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.22); }
+
+.toast { position:fixed; bottom:28px; right:28px; background:#1a2540; border:1px solid var(--teal); color:var(--text); border-radius:14px; padding:14px 22px; font-size:14px; font-weight:600; box-shadow:var(--shadow-lg); z-index:100; opacity:0; transform:translateY(16px); transition:opacity .35s ease,transform .35s ease; pointer-events:none; }
+.toast.show { opacity:1; transform:translateY(0); }
+
+@media (max-width:1100px) { .shell { grid-template-columns:1fr; padding:18px; } .left { position:static; } .cards { grid-template-columns:1fr; } }
+@media (max-width:720px) { .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; } .col-2 { grid-column:1/-1; } .item-row.order-cols,.items-header.order-cols { grid-template-columns:1fr 1fr; } h1 { font-size:28px; } }
+@media (max-width:480px) { .item-row.order-cols,.items-header.order-cols { grid-template-columns:1fr; } }
+</style>
 </head>
 <body>
 <main class="shell">
-  <!-- ── SIDEBAR ── -->
   <aside class="left">
     <div class="logo-badge">
       <svg width="38" height="38" viewBox="0 0 38 38" fill="none" aria-label="Techred logo">
@@ -23,13 +107,11 @@
       </svg>
       <div class="logo-text">TECH<span>RED</span></div>
     </div>
-
     <div>
       <p class="mini">Vanti Listo · Documentos</p>
       <h1>Generador de documentos</h1>
       <p class="subtitle">Selecciona el formato, completa los campos y descarga el PDF listo para imprimir.</p>
     </div>
-
     <div class="divider"></div>
     <div class="creator">
       <span>Creado por</span>
@@ -37,19 +119,203 @@
     </div>
   </aside>
 
-  <!-- ── PANEL PRINCIPAL ── -->
   <section class="right">
     <div class="cards">
       <button class="doc-btn active" data-doc="acta-entrega">Acta de Entrega VANTI</button>
       <button class="doc-btn"        data-doc="orden-pedido">Orden de pedido</button>
       <button class="doc-btn"        data-doc="cambio-producto">Formato de cambio de producto</button>
     </div>
-
     <div id="form-zone"></div>
   </section>
 </main>
 
 <div class="toast" id="toast">✓ PDF generado — descargando…</div>
-<script src="/static/js/app.js"></script>
+
+<script>
+const zone  = document.getElementById("form-zone");
+const btns  = document.querySelectorAll(".doc-btn");
+const toast = document.getElementById("toast");
+
+function showToast(){toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),3000);}
+
+const itemsOrden = Array.from({length:4},(_,i)=>`
+<div class="item-row order-cols">
+  <input placeholder="Ref"         data-g="items" data-i="${i}" data-k="ref">
+  <input placeholder="1"           data-g="items" data-i="${i}" data-k="cant">
+  <input placeholder="Descripción" data-g="items" data-i="${i}" data-k="descripcion">
+  <input placeholder="$ 0"         data-g="items" data-i="${i}" data-k="valor_producto">
+  <input placeholder="0"           data-g="items" data-i="${i}" data-k="cuotas">
+  <input placeholder="$ 0"         data-g="items" data-i="${i}" data-k="valor_cuotas">
+</div>`).join("");
+
+const itemsActa = Array.from({length:7},(_,i)=>`
+<div class="item-row acta-cols">
+  <input placeholder="Descripción del producto" data-g="items" data-i="${i}" data-k="descripcion">
+  <input placeholder="0"                         data-g="items" data-i="${i}" data-k="cantidad">
+  <input placeholder="$ 0"                       data-g="items" data-i="${i}" data-k="valor">
+</div>`).join("");
+
+const templates = {
+"acta-entrega":`
+<form id="doc-form" novalidate>
+  <p class="form-heading">Acta de Entrega VANTI</p>
+  <p class="section-title">Fecha y consecutivo</p>
+  <div class="grid-4">
+    <div class="field"><label>Día</label><input name="dia" placeholder="DD"></div>
+    <div class="field"><label>Mes</label><input name="mes" placeholder="MM"></div>
+    <div class="field"><label>Año</label><input name="anio" placeholder="AAAA"></div>
+    <div class="field"><label>Consecutivo</label><input name="consecutivo"></div>
+  </div>
+  <p class="section-title">Datos del cliente</p>
+  <div class="grid-2">
+    <div class="field"><label>Nombre completo</label><input name="cliente" required></div>
+    <div class="field"><label>Tipo de documento</label>
+      <select name="tipo_documento">
+        <option value="CC">Cédula de Ciudadanía (CC)</option>
+        <option value="CE">Cédula de Extranjería (CE)</option>
+        <option value="NIT">NIT</option>
+        <option value="PP">Pasaporte</option>
+      </select>
+    </div>
+    <div class="field"><label>Número de documento</label><input name="cc"></div>
+    <div class="field"><label>Cuenta contrato (Recibo Vanti)</label><input name="cuenta_contrato"></div>
+    <div class="field col-2"><label>Dirección de entrega</label><input name="direccion"></div>
+    <div class="field"><label>Ciudad</label><input name="ciudad"></div>
+  </div>
+  <p class="section-title">Quien realiza la entrega</p>
+  <div class="grid-2">
+    <div class="field"><label>Nombre</label><input name="entrega_nombre"></div>
+    <div class="field"><label>Cédula</label><input name="entrega_cc"></div>
+  </div>
+  <p class="section-title">Detalle de productos (hasta 7 filas)</p>
+  <div class="items-box">
+    <div class="items-header acta-cols"><span>Descripción</span><span>Cantidad</span><span>Valor</span></div>
+    ${itemsActa}
+  </div>
+  <div class="btn-row"><button type="submit" class="btn btn-primary">⬇ Descargar PDF</button></div>
+</form>`,
+
+"orden-pedido":`
+<form id="doc-form" novalidate>
+  <p class="form-heading">Orden de pedido</p>
+  <p class="section-title">Datos del cliente</p>
+  <div class="grid-2">
+    <div class="field"><label>Nombre del cliente</label><input name="cliente" required></div>
+    <div class="field"><label>C.C</label><input name="cc"></div>
+    <div class="field"><label>Tel / Cel</label><input name="tel"></div>
+    <div class="field col-2"><label>Dirección</label><input name="direccion"></div>
+    <div class="field"><label>Barrio</label><input name="barrio"></div>
+    <div class="field"><label>Ciudad</label><input name="ciudad"></div>
+    <div class="field"><label>Contacto 1</label><input name="contacto1"></div>
+    <div class="field"><label>Contacto 2</label><input name="contacto2"></div>
+    <div class="field col-2"><label>Correo electrónico</label><input name="correo" type="email"></div>
+  </div>
+  <p class="section-title">Fecha y cuenta</p>
+  <div class="grid-4">
+    <div class="field"><label>Día</label><input name="dia" placeholder="DD"></div>
+    <div class="field"><label>Mes</label><input name="mes" placeholder="MM"></div>
+    <div class="field"><label>Año</label><input name="anio" placeholder="AAAA"></div>
+    <div class="field"><label>Cuenta contrato</label><input name="cuenta_contrato"></div>
+  </div>
+  <p class="section-title">Detalle de productos (hasta 4 filas)</p>
+  <div class="items-box">
+    <div class="items-header order-cols">
+      <span>REF</span><span>CANT</span><span>Descripción</span>
+      <span>Valor producto</span><span>Cuotas</span><span>Valor cuota</span>
+    </div>
+    ${itemsOrden}
+  </div>
+  <p class="section-title">Totales y pago</p>
+  <div class="grid-2">
+    <div class="field"><label>Valor total de la compra</label><input name="valor_total" placeholder="$ 0"></div>
+    <div class="field"><label>Contraentrega $</label><input name="contraentrega"></div>
+  </div>
+  <div class="field">
+    <label>Forma de pago</label>
+    <div class="pay-group">
+      <label class="pay-option"><input type="checkbox" name="efectivo"> Efectivo</label>
+      <label class="pay-option"><input type="checkbox" name="vanti_listo"> Vanti Listo</label>
+      <label class="pay-option"><input type="checkbox" name="otro"> Otro</label>
+    </div>
+  </div>
+  <p class="section-title">Datos del asesor</p>
+  <div class="grid-2">
+    <div class="field"><label>Asesor</label><input name="asesor"></div>
+    <div class="field"><label>Código asesor</label><input name="cod_asesor"></div>
+    <div class="field"><label>Supervisor</label><input name="supervisor"></div>
+  </div>
+  <div class="btn-row"><button type="submit" class="btn btn-primary">⬇ Descargar PDF</button></div>
+</form>`,
+
+"cambio-producto":`
+<form id="doc-form" novalidate>
+  <p class="form-heading">Formato de cambio de producto</p>
+  <p class="section-title">Fecha</p>
+  <div class="grid-3">
+    <div class="field"><label>Día</label><input name="dia" placeholder="DD"></div>
+    <div class="field"><label>Mes</label><input name="mes" placeholder="MM"></div>
+    <div class="field"><label>Año</label><input name="anio" placeholder="AAAA"></div>
+  </div>
+  <p class="section-title">Datos del cliente</p>
+  <div class="grid-2">
+    <div class="field"><label>Nombre completo</label><input name="cliente" required></div>
+    <div class="field"><label>Cédula</label><input name="cc"></div>
+    <div class="field"><label>Cuenta contrato</label><input name="cuenta_contrato"></div>
+  </div>
+  <p class="section-title">Productos</p>
+  <div class="field"><label>Producto financiado (actual)</label><textarea name="producto_actual" placeholder="Descripción del producto actual..."></textarea></div>
+  <div class="field"><label>Producto a cambiar</label><textarea name="producto_nuevo" placeholder="Descripción del producto nuevo..."></textarea></div>
+  <div class="field"><label>Motivo del cambio</label><textarea name="motivo" style="min-height:120px" placeholder="Describa el motivo del cambio..."></textarea></div>
+  <p class="section-title">Quien realiza la entrega</p>
+  <div class="grid-2">
+    <div class="field"><label>Nombre</label><input name="entrega_nombre"></div>
+    <div class="field"><label>Cédula</label><input name="entrega_cc"></div>
+  </div>
+  <div class="btn-row"><button type="submit" class="btn btn-primary">⬇ Descargar PDF</button></div>
+</form>`
+};
+
+function render(doc){
+  zone.innerHTML = templates[doc] || "<p>Formulario no disponible.</p>";
+  const form = document.getElementById("doc-form");
+  if(!form) return;
+  form.addEventListener("submit", async e=>{
+    e.preventDefault();
+    const btn = form.querySelector("[type=submit]");
+    btn.textContent = "Generando…"; btn.disabled = true;
+    const fd = new FormData(form);
+    const data = {};
+    for(const [k,v] of fd.entries()){
+      if(form.querySelector(`[name="${k}"]`)?.type !== "checkbox") data[k]=v;
+    }
+    form.querySelectorAll("input[type=checkbox]").forEach(cb=>{ data[cb.name]=cb.checked; });
+    const groups={};
+    form.querySelectorAll("[data-g='items']").forEach(inp=>{
+      const idx=Number(inp.dataset.i), key=inp.dataset.k;
+      groups[idx]=groups[idx]||{};
+      groups[idx][key]=inp.value;
+    });
+    if(Object.keys(groups).length) data.items=Object.values(groups);
+    try{
+      const res  = await fetch(`/generate/${doc}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href=url; a.download=`${doc}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+      showToast();
+    }catch(err){ alert("Error generando el PDF. Revisa la conexión al servidor."); }
+    finally{ btn.textContent="⬇ Descargar PDF"; btn.disabled=false; }
+  });
+}
+
+btns.forEach(b=>b.addEventListener("click",()=>{
+  btns.forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  render(b.dataset.doc);
+}));
+
+render("acta-entrega");
+</script>
 </body>
 </html>
