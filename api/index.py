@@ -8,16 +8,13 @@ from io import BytesIO
 import os, io
 from docx import Document
 import mammoth
-from weasyprint import HTML as WeasyprintHTML
+from xhtml2pdf import pisa
 
 app = Flask(__name__, template_folder="../templates", static_folder="../static")
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 PLANTILLAS = os.path.join(BASE, "..", "plantillas")
 
-# ─────────────────────────────────────────────
-#  HELPER: rellenar DOCX template → PDF
-# ─────────────────────────────────────────────
 CSS_BASE = """
 @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
 body { font-family: Arial, sans-serif; font-size: 9.5pt; color: #000; line-height: 1.5; }
@@ -56,46 +53,38 @@ def fill_template_pdf(template_name, data, extra_css=""):
 
     html_body = mammoth.convert_to_html(docx_buf).value
     full_html = f"""<!DOCTYPE html>
-<html><head><meta charset='utf-8'>
+<html><head><meta charset="utf-8">
 <style>{CSS_BASE}{extra_css}</style></head>
 <body>{html_body}</body></html>"""
 
     pdf_buf = io.BytesIO()
-    WeasyprintHTML(string=full_html).write_pdf(pdf_buf)
+    pisa.CreatePDF(full_html, dest=pdf_buf)
     pdf_buf.seek(0)
     return pdf_buf
 
 
-# ─────────────────────────────────────────────
-#  ORDEN DE PEDIDO — ReportLab pixel-perfect
-# ─────────────────────────────────────────────
 def pdf_orden(d):
     buf = BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     W, H = A4
     m = 15 * mm
 
-    # ── LOGO TECHRED (izquierda)
-    c.setFont("Helvetica-Bold", 26)
+    # LOGO
+    c.setFont("Helvetica-Bold", 22)
     c.setFillColor(colors.black)
     c.drawString(m, H - 22*mm, "•TECH")
     c.setFillColor(colors.HexColor("#cc0000"))
-    c.drawString(m + 38*mm, H - 22*mm, "RED")
+    c.drawString(m + 34*mm, H - 22*mm, "RED")
     c.setFillColor(colors.black)
 
-    # Flecha del logo
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(m + 63*mm, H - 22*mm, "⇌")
-
-    c.setFont("Helvetica", 8.5)
+    c.setFont("Helvetica", 8)
     c.drawString(m, H - 28*mm, "Tecnología  •  Infraestructura")
-    c.setFont("Helvetica-Bold", 8)
+    c.setFont("Helvetica-Bold", 7.5)
     c.drawString(m, H - 34*mm, "NIT. 900.866.525 -6")
     c.drawString(m, H - 39*mm, "CLL 68 # 23-61 7 DE AGOSTO")
     c.drawString(m, H - 44*mm, "CORREO: VANTILISTO@TECHRED.COM.CO")
     c.drawString(m, H - 49*mm, "www.techred.com.co")
 
-    # ── CAMPOS CLIENTE (centro)
     cx = 78*mm
     def lf(label, val, x, y, lw=22*mm, fw=80*mm, sz=9):
         c.setFont("Helvetica-Bold", sz)
@@ -105,19 +94,18 @@ def pdf_orden(d):
         c.setLineWidth(0.4)
         c.line(x + lw - 1, y - 2.5, x + lw + fw, y - 2.5)
 
-    lf("CLIENTE:", d.get("cliente"), cx, H-20*mm, 20*mm, 92*mm)
-    lf("C.C:",    d.get("cc"),      cx, H-28*mm, 11*mm, 34*mm)
-    lf("TEL/CEL:", d.get("tel"),    cx+48*mm, H-28*mm, 19*mm, 42*mm)
+    lf("CLIENTE:",    d.get("cliente"),   cx, H-20*mm, 20*mm, 92*mm)
+    lf("C.C:",        d.get("cc"),        cx, H-28*mm, 11*mm, 34*mm)
+    lf("TEL/CEL:",    d.get("tel"),       cx+48*mm, H-28*mm, 19*mm, 42*mm)
     lf("DIRECCIÓN:", d.get("direccion"), cx, H-36*mm, 22*mm, 90*mm)
-    lf("BARRIO:",  d.get("barrio"), cx, H-44*mm, 16*mm, 46*mm)
-    lf("CIUDAD:",  d.get("ciudad"), cx+66*mm, H-44*mm, 16*mm, 27*mm)
+    lf("BARRIO:",     d.get("barrio"),    cx, H-44*mm, 16*mm, 46*mm)
+    lf("CIUDAD:",     d.get("ciudad"),    cx+66*mm, H-44*mm, 16*mm, 27*mm)
     lf("CONTACTO 1:", d.get("contacto1"), cx, H-52*mm, 26*mm, 86*mm)
     lf("CONTACTO 2:", d.get("contacto2"), cx, H-60*mm, 26*mm, 86*mm)
-    lf("CORREO:",  d.get("correo"), cx, H-68*mm, 16*mm, 96*mm)
+    lf("CORREO:",     d.get("correo"),    cx, H-68*mm, 16*mm, 96*mm)
 
-    # ── CAJA ORDEN / FECHA / CUENTA (derecha)
-    bx = 168*mm
     # Caja ORDEN DE PEDIDO
+    bx = 168*mm
     c.setLineWidth(1.2)
     c.roundRect(bx, H-29*mm, 27*mm, 10*mm, 2)
     c.setFont("Helvetica-Bold", 9)
@@ -126,7 +114,7 @@ def pdf_orden(d):
     c.drawCentredString(bx+13.5*mm, H-27.5*mm, "PEDIDO")
     c.setFillColor(colors.black)
 
-    # FECHA DE PEDIDO
+    # FECHA
     c.setFont("Helvetica-Bold", 8.5)
     c.drawString(bx, H-37*mm, "FECHA DE PEDIDO")
     date_labels = ["DIA","MES","AÑO"]
@@ -150,9 +138,10 @@ def pdf_orden(d):
     c.setFont("Helvetica", 9)
     c.drawCentredString(bx+13.5*mm, H-60.5*mm, str(d.get("cuenta_contrato","")))
 
-    # ── TABLA PRODUCTOS
+    # TABLA PRODUCTOS
     items = d.get("items", [])
-    while len(items) < 4: items.append({})
+    while len(items) < 4:
+        items.append({})
     rows = [["REF","CANT","DESCRIPCION","VALOR PRODUCTO","CUOTAS","VALOR CUOTAS"]]
     for it in items[:4]:
         rows.append([
@@ -181,7 +170,7 @@ def pdf_orden(d):
     tbl.wrapOn(c, W, H)
     tbl.drawOn(c, m, tbl_y)
 
-    # ── FORMA DE PAGO
+    # FORMA DE PAGO
     py = tbl_y - 16*mm
     c.setFont("Helvetica-Bold", 10)
     c.drawString(m, py, "FORMA DE PAGO")
@@ -202,21 +191,19 @@ def pdf_orden(d):
     lf("COD ASESOR:",      d.get("cod_asesor"),     m, py-42*mm, 26*mm, 62*mm)
     lf("SUPERVISOR:",      d.get("supervisor"),     m, py-51*mm, 24*mm, 64*mm)
 
-    # Caja huella
+    # Huella + Firma
     hx, hy = 130*mm, py-58*mm
     c.setLineWidth(0.8)
     c.roundRect(hx, hy, 26*mm, 38*mm, 4)
     c.setFont("Helvetica-Bold", 8)
     c.drawCentredString(hx+13*mm, hy - 5*mm, "HUELLA CLIENTE")
-
-    # Firma cliente
     c.line(170*mm, hy, 205*mm, hy)
     c.setFont("Helvetica-Bold", 8)
     c.drawCentredString(187.5*mm, hy-5*mm, "FIRMA CLIENTE")
 
-    # ── FOOTER
+    # FOOTER
     c.setFillColor(colors.HexColor("#cc0000"))
-    c.setFont("Helvetica-Bold", 8.5)
+    c.setFont("Helvetica-Bold", 8)
     c.drawCentredString(W/2, 24*mm,
         "Línea de servicio al cliente y garantías - WhatsApp: - 302 5555083 - correo electrónico: servicio.cliente@techred.com.co")
     c.setFillColor(colors.black)
@@ -224,7 +211,7 @@ def pdf_orden(d):
     c.drawCentredString(W/2, 18*mm, "Conozca más en www.techred.com.co/pages/politicas-de-privacidad")
     c.setFont("Helvetica", 7)
     c.drawCentredString(W/2, 12*mm,
-        "Aplican T&C. Este producto es comercializado y distribuido por Techred S.A.S Vanti Listo actúa únicamente como medio de financiamiento. © Techred S.A.S 2026")
+        "Aplican T&C. Este producto es comercializado y distribuido por Techred S.A.S. © Techred S.A.S 2026")
 
     c.showPage()
     c.save()
@@ -232,20 +219,15 @@ def pdf_orden(d):
     return buf
 
 
-# ─────────────────────────────────────────────
-#  ROUTES
-# ─────────────────────────────────────────────
 @app.route("/")
 def home():
     return render_template("index.html")
-
 
 @app.route("/generate/orden-pedido", methods=["POST"])
 def gen_orden():
     data = request.get_json() or {}
     return send_file(pdf_orden(data), as_attachment=True,
                      download_name="orden-pedido.pdf", mimetype="application/pdf")
-
 
 @app.route("/generate/acta-entrega", methods=["POST"])
 def gen_acta():
@@ -262,14 +244,12 @@ def gen_acta():
     return send_file(pdf, as_attachment=True,
                      download_name="acta-entrega.pdf", mimetype="application/pdf")
 
-
 @app.route("/generate/cambio-producto", methods=["POST"])
 def gen_cambio():
     data = request.get_json() or {}
     pdf = fill_template_pdf("cambio_producto_template.docx", data)
     return send_file(pdf, as_attachment=True,
                      download_name="cambio-producto.pdf", mimetype="application/pdf")
-
 
 if __name__ == "__main__":
     app.run(debug=True)
