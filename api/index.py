@@ -55,10 +55,11 @@ def generar_pdf(doc_type: str, datos: dict) -> io.BytesIO:
     drive, docs = get_services()
     template_id = DOC_IDS[doc_type]
 
-    # 1. Copiar plantilla (no toca el original)
+    # 1. Copiar plantilla dentro del mismo Shared Drive
     copia = drive.files().copy(
         fileId=template_id,
         body={"name": f"temp_{doc_type}"},
+        supportsAllDrives=True,
     ).execute()
     copia_id = copia["id"]
 
@@ -80,7 +81,10 @@ def generar_pdf(doc_type: str, datos: dict) -> io.BytesIO:
         return buf
     finally:
         # 4. Eliminar copia temporal siempre
-        drive.files().delete(fileId=copia_id).execute()
+        drive.files().delete(
+            fileId=copia_id,
+            supportsAllDrives=True,
+        ).execute()
 
 
 # ----------------------------------------
