@@ -8,10 +8,13 @@ from googleapiclient.http import MediaIoBaseDownload
 
 app = Flask(__name__, template_folder="../templates", static_folder="../static")
 
-# IDs de las plantillas en Google Drive
+# ID del Shared Drive donde viven las plantillas
+SHARED_DRIVE_ID = "0AMnK8dCoRfXiUk9PVA"
+
+# IDs actualizados de las plantillas en el Shared Drive
 DOC_IDS = {
-    "acta-entrega":    "1GpIA_o9PKS2Y9t1EnNzM98QwV3hFVYqi",
-    "cambio-producto": "1hepEdbtgXqFIJcLPpPHMj2imn5a_0s_5",
+    "acta-entrega":    "1dBzmOFTKwwJNpKYxL4w2uC9ltSJ7znLi",
+    "cambio-producto": "1YA6hhMIc4hO-WFm5d67PNyKdxRE5zH2D",
     "orden-pedido":    "TALONARIO_DOC_ID_PENDIENTE",  # reemplazar con el ID real
 }
 
@@ -55,10 +58,13 @@ def generar_pdf(doc_type: str, datos: dict) -> io.BytesIO:
     drive, docs = get_services()
     template_id = DOC_IDS[doc_type]
 
-    # 1. Copiar plantilla dentro del mismo Shared Drive
+    # 1. Copiar plantilla DENTRO del Shared Drive (evita error de cuota)
     copia = drive.files().copy(
         fileId=template_id,
-        body={"name": f"temp_{doc_type}"},
+        body={
+            "name": f"temp_{doc_type}",
+            "parents": [SHARED_DRIVE_ID],
+        },
         supportsAllDrives=True,
     ).execute()
     copia_id = copia["id"]
